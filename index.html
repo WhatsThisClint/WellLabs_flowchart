@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Flow Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8fafc;
+        }
+
+        #flowchart {
+            width: 100vw;
+            height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #flowchart svg {
+            max-width: 100%;
+            max-height: 100%;
+            margin: auto;
+        }
+
+        .mermaid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 2px solid #3b82f6;
+            background: white;
+            color: #3b82f6;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 1000;
+            max-width: 300px;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Node hover effects */
+        .node:hover {
+            filter: brightness(1.1);
+            cursor: pointer;
+        }
+
+        .edgePath:hover {
+            stroke-width: 2px !important;
+            cursor: pointer;
+        }
+
+        g.node-clicked {
+            filter: brightness(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="flowchart">
+        <pre class="mermaid">
+            %%{
+                init: {
+                    'theme': 'base',
+                    'themeVariables': {
+                        'primaryColor': '#3b82f6',
+                        'primaryTextColor': '#1e293b',
+                        'primaryBorderColor': '#60a5fa',
+                        'lineColor': '#60a5fa',
+                        'secondaryColor': '#f97316',
+                        'tertiaryColor': '#fff7ed'
+                    },
+                    'flowchart': {
+                        'curve': 'basis',
+                        'padding': 20,
+                        'nodeSpacing': 50,
+                        'rankSpacing': 50
+                    }
+                }
+            }%%
+            flowchart TD
+                %% Main Paper Flow
+                A["<b>Problem</b><br/>Identification"] --> B["<b>Research</b><br/>Problem"]
+                B --> C["<b>Investigation</b><br/>Methods"]
+                C --> D["<b>Analysis &</b><br/>Findings"]
+                D --> E["<b>New</b><br/>Solution"]
+                E --> F["<b>Implications</b><br/>& Impact"]
+
+                %% Problem Identification Section
+                subgraph A_main["<b>Initial Context</b>"]
+                    A1["Official Data<br/>Shows Recovery"]
+                    A2["Ground Reality<br/>Shows Crisis"]
+                    A3["Contradicting<br/>Reports"]
+                end
+                A --> A_main
+
+                %% Methods with Critique
+                subgraph C_main["<b>Data Collection & Analysis</b>"]
+                    C1["GRACE<br/>Satellite Data"]
+                    C2["Monitoring<br/>Well Data"]
+                    C3["Agricultural<br/>Census"]
+                    C4["Precipitation<br/>Analysis"]
+                end
+                C_crit["<b>Rainfall-Recharge Complexity:</b><br/>
+                • Does not consider rainfall-recharge complexity<br/>
+                • Oversimplifies rainfall impacts<br/>
+                • The same intensity rain over a 3-day period versus a 30-day period has different implications for infiltration"]
+                C --> C_main
+                C_main -.-> C_crit
+
+                %% Analysis with Critique
+                subgraph D_main["<b>Key Findings</b>"]
+                    D1["Survivor Bias<br/>in Data"]
+                    D2["Missing Data<br/>Correlation"]
+                    D3["Well Depth<br/>Differences"]
+                end
+                D_crit["<b>Aquifer Complexity:</b><br/>
+                • Neglects aquifer complexity<br/>
+                • Hard-rock aquifers can consist of isolated systems, with wells 40–60 ft apart behaving independently<br/>
+                • Vesicular and fractured layers differ in porosity and permeability, complicating aquifer dynamics<br/>
+                • Historical community insights can help validate long-term trends. However, this was not the main focus of the paper so granted"]
+                D --> D_main
+                D_main -.-> D_crit
+
+                %% New Solution with Critique
+                subgraph E_main["<b>Proposed Metrics</b>"]
+                    E1["Defunct Wells %"]
+                    E2["Dry Wells %"]
+                end
+                E_crit["<b>Data Quality Considerations:</b><br/>
+                • In this case, survivor bias is valid, but missing data may stem from different causes and not always reflect stress<br/>
+                • Local knowledge is crucial but difficult to measure across larger regions and requires more resources<br/>
+                • Metrics suggested might work in this context but need specificity (e.g., 'defunct' wells) for broader application<br/>
+                • Well density and understanding the aquifer they represent are crucial<br/>
+                • Reasons for stopped measurements vary<br/>
+                • Wells may not have been dug at the same time, leading to time scale differences<br/>
+                • Wells measuring in different seasons (wet/dry) or at different intervals (monthly/yearly) cannot be compared directly<br/>
+                • Excluded wells can skew the perspective, but including all wells can violate statistical standards<br/>
+                • Starting times of analysis can skew interpretations and a appropriately highlighted<br/>
+                • Context-specific understanding and method selection are essential"]
+                E --> E_main
+                E_main -.-> E_crit
+
+                %% Implications with Critique
+                subgraph F_main["<b>Conclusions</b>"]
+                    F1["Method<br/>Inadequacy"]
+                    F2["Policy<br/>Needs"]
+                    F3["Global<br/>Impact"]
+                end
+                F --> F_main
+
+                %% Adding Global Context-Specific Understanding
+                F4["<b>Global Context-Specific Understanding:</b><br/>
+                • Survior bias valid in this case but cannot translate globally<br/>
+                • Need to strike a baance between statistical accuracy and extent of inferences made<br/>
+                • Methodology must be tailored to regional and contextual differences<br/>
+                • New indicators can prove effictive but should represent the actual case. A truly defunct well in a particular aquifer can provide valuable insights when compared with otehrs in the same aquifer<br/>
+                • Inferring wells to be defunct/dry could also introduce a bias"]
+                F_main --> F4
+
+                %% Styling
+                classDef default fill:#f8fafc,stroke:#3b82f6,stroke-width:2px
+                classDef critique fill:#fff7ed,stroke:#f97316,stroke-width:2px,text-align:left
+                classDef mainFlow fill:#dbeafe,stroke:#3b82f6,stroke-width:3px
+                class A,B,C,D,E,F mainFlow
+                class C_crit,D_crit,E_crit,F4 critique
+        </pre>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="zoomIn()">Zoom In</button>
+        <button class="btn" onclick="zoomOut()">Zoom Out</button>
+        <button class="btn" onclick="resetZoom()">Reset</button>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            securityLevel: 'loose',
+            theme: 'base',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        // Initialize pan-zoom after Mermaid renders
+        mermaid.init(undefined, ".mermaid").then(function() {
+            const svg = document.querySelector("#flowchart svg");
+            if (svg) {
+                // Set SVG attributes for better sizing
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.setAttribute('width', '100%');
+                svg.setAttribute('height', '100%');
+                
+                window.panZoom = svgPanZoom(svg, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: false,
+                    fit: true,
+                    center: true,
+                    minZoom: 0.1,
+                    maxZoom: 10,
+                    zoomScaleSensitivity: 0.5
+                });
+                
+                // Fit and center the diagram
+                setTimeout(() => {
+                    window.panZoom.resize();
+                    window.panZoom.fit();
+                    window.panZoom.center();
+                }, 100);
+
+                // Add event listeners for nodes
+                const nodes = document.querySelectorAll(".node");
+                nodes.forEach(node => {
+                    node.addEventListener("mouseenter", showTooltip);
+                    node.addEventListener("mouseleave", hideTooltip);
+                    node.addEventListener("click", toggleNodeHighlight);
+                });
+
+                // Add event listeners for edges
+                const edges = document.querySelectorAll(".edgePath");
+                edges.forEach(edge => {
+                    edge.addEventListener("mouseenter", showEdgeTooltip);
+                    edge.addEventListener("mouseleave", hideTooltip);
+                });
+            }
+        });
+
+        function showTooltip(event) {
+            const node = event.target.closest(".node");
+            if (node) {
+                const text = node.textContent.trim();
+                const tooltip = document.getElementById("tooltip");
+                tooltip.textContent = text;
+                tooltip.style.opacity = "1";
+                
+                // Position tooltip near the mouse but ensure it stays in viewport
+                const rect = node.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                
+                let left = event.clientX + 15;
+                let top = event.clientY + 15;
+                
+                // Adjust if tooltip would go off screen
+                if (left + tooltipRect.width > window.innerWidth) {
+                    left = window.innerWidth - tooltipRect.width - 10;
+                }
+                if (top + tooltipRect.height > window.innerHeight) {
+                    top = window.innerHeight - tooltipRect.height - 10;
+                }
+                
+                tooltip.style.left = left + "px";
+                tooltip.style.top = top + "px";
+            }
+        }
+
+        function showEdgeTooltip(event) {
+            const edge = event.target.closest(".edgePath");
+            if (edge) {
+                const tooltip = document.getElementById("tooltip");
+                tooltip.textContent = "Connection between steps";
+                tooltip.style.opacity = "1";
+                tooltip.style.left = event.clientX + 15 + "px";
+                tooltip.style.top = event.clientY + 15 + "px";
+            }
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById("tooltip");
+            tooltip.style.opacity = "0";
+        }
+
+        function toggleNodeHighlight(event) {
+            const node = event.target.closest(".node");
+            if (node) {
+                node.classList.toggle("node-clicked");
+            }
+        }
+
+        function zoomIn() {
+            if (window.panZoom) {
+                window.panZoom.zoomIn();
+            }
+        }
+
+        function zoomOut() {
+            if (window.panZoom) {
+                window.panZoom.zoomOut();
+            }
+        }
+
+        function resetZoom() {
+            if (window.panZoom) {
+                window.panZoom.resize();
+                window.panZoom.fit();
+                window.panZoom.center();
+            }
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.panZoom) {
+                window.panZoom.resize();
+                window.panZoom.fit();
+                window.panZoom.center();
+            }
+        });
+    </script>
+</body>
+</html>
