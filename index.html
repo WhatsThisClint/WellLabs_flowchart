@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Flow Analysis</title>
+    <title>Research Flow Analysis</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
     <style>
@@ -12,42 +12,40 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
+
+        body {
+            background: #ffffff;
+            font-family: Arial, sans-serif;
             overflow: hidden;
         }
 
-        body {
-            font-family: Arial, sans-serif;
+        #container {
+            width: 100vw;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f8fafc;
+            padding: 20px;
         }
 
         #flowchart {
-            width: 100vw;
-            height: 100vh;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #flowchart svg {
-            max-width: 100%;
-            max-height: 100%;
-            margin: auto;
+            width: 100%;
+            height: 100%;
+            background: white;
         }
 
         .mermaid {
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        }
+
+        /* Simple hover effect */
+        #flowchart svg g.node rect {
+            transition: transform 0.2s ease;
+        }
+
+        #flowchart svg g.node:hover rect {
+            transform: scale(1.02);
         }
 
         .controls {
@@ -57,181 +55,268 @@
             display: flex;
             gap: 10px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(8px);
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .mouse-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            font-size: 14px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #666;
+            z-index: 1000;
+            text-align: left;
         }
 
         .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
             padding: 8px 16px;
-            border: 2px solid #3b82f6;
-            background: white;
-            color: #3b82f6;
             border-radius: 8px;
             cursor: pointer;
-            font-family: inherit;
+            font-family: 'Inter', sans-serif;
             font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            transition: background 0.2s ease;
         }
 
         .btn:hover {
-            background: #3b82f6;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+            background: #2563eb;
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        /* Tooltip styles */
-        .tooltip {
+        /* Keep the nice greeting card style */
+        .greeting {
             position: fixed;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #1e293b;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            pointer-events: none;
-            opacity: 0;
-            transition: all 0.2s;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-size: 20px;
+            color: #1f2937;
             z-index: 1000;
-            max-width: 300px;
-            backdrop-filter: blur(8px);
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: slideIn 0.5s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Node hover effects */
-        .node:hover {
-            filter: brightness(1.1);
-            cursor: pointer;
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .edgePath:hover {
-            stroke-width: 2px !important;
-            cursor: pointer;
+        .greeting span {
+            color: #3b82f6;
+            font-weight: 600;
         }
 
-        g.node-clicked {
-            filter: brightness(1.2);
+        .greeting img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        /* Style for bullet points in mermaid nodes */
+        .node foreignObject div {
+            text-align: left !important;
+            padding-left: 10px;
+        }
+
+        /* Ensure bullet points are left-aligned */
+        .node text {
+            text-align: left !important;
+        }
+
+        /* Override any center alignment for detail nodes */
+        .detail text, .critique text {
+            text-align: left !important;
+        }
+
+        /* Add some padding for bullet points in nodes */
+        .node foreignObject {
+            overflow: visible;
+            padding-left: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="flowchart">
-        <pre class="mermaid">
-            %%{
-                init: {
-                    'theme': 'base',
-                    'themeVariables': {
-                        'primaryColor': '#3b82f6',
-                        'primaryTextColor': '#1e293b',
-                        'primaryBorderColor': '#60a5fa',
-                        'lineColor': '#60a5fa',
-                        'secondaryColor': '#f97316',
-                        'tertiaryColor': '#fff7ed'
-                    },
-                    'flowchart': {
-                        'curve': 'basis',
-                        'padding': 20,
-                        'nodeSpacing': 50,
-                        'rankSpacing': 50
+    <div class="greeting"></div>
+
+    <div id="container">
+        <div id="flowchart">
+            <pre class="mermaid">
+                %%{
+                    init: {
+                        'theme': 'base',
+                        'themeVariables': {
+                            'primaryColor': '#e1f5fe',
+                            'primaryBorderColor': '#01579b',
+                            'lineColor': '#333',
+                            'fontSize': '16px'
+                        },
+                        'flowchart': {
+                            'htmlLabels': true,
+                            'curve': 'basis'
+                        }
                     }
-                }
-            }%%
-            flowchart TD
-                %% Main Paper Flow
-                A["<b>Problem</b><br/>Identification"] --> B["<b>Research</b><br/>Problem"]
-                B --> C["<b>Investigation</b><br/>Methods"]
-                C --> D["<b>Analysis &</b><br/>Findings"]
-                D --> E["<b>New</b><br/>Solution"]
-                E --> F["<b>Implications</b><br/>& Impact"]
+                }%%
+                flowchart TD
+                    %% Core Research Structure
+                    A[Research Paradox] --> B[Methodology]
+                    B --> C[Analysis Framework]
+                    C --> D[Alternative Metrics]
+                    D --> E[Implications]
 
-                %% Problem Identification Section
-                subgraph A_main["<b>Initial Context</b>"]
-                    A1["Official Data<br/>Shows Recovery"]
-                    A2["Ground Reality<br/>Shows Crisis"]
-                    A3["Contradicting<br/>Reports"]
-                end
-                A --> A_main
+                    %% Research Paradox Breakdown
+                    subgraph A_main[Conflicting Evidence]
+                        A1[Official Reports: Recovery] -->|Conflicts with| A2[Ground Reality]
+                        A1_detail["• GRACE data showing increase
+                        • Rising water levels in monitoring wells
+                        • Political intervention claims"]
+                        A2_detail["• Increasing well failures
+                        • Decreasing shallow well irrigation
+                        • Rising farmer distress
+                        • More newspaper reports of depletion"]
+                        A1 --- A1_detail
+                        A2 --- A2_detail
+                    end
+                    A --> A_main
 
-                %% Methods with Critique
-                subgraph C_main["<b>Data Collection & Analysis</b>"]
-                    C1["GRACE<br/>Satellite Data"]
-                    C2["Monitoring<br/>Well Data"]
-                    C3["Agricultural<br/>Census"]
-                    C4["Precipitation<br/>Analysis"]
-                end
-                C_crit["<b>Rainfall-Recharge Complexity:</b><br/>
-                • Does not consider rainfall-recharge complexity<br/>
-                • Oversimplifies rainfall impacts<br/>
-                • The same intensity rain over a 3-day period versus a 30-day period has different implications for infiltration"]
-                C --> C_main
-                C_main -.-> C_crit
+                    %% Methodology
+                    subgraph B_main[Data Collection & Analysis Issues]
+                        B1[Traditional Methods] -->|Lead to| B2[Systematic Bias]
+                        B1_detail["• Well monitoring data
+                        • GRACE satellite observations
+                        • Groundwater level trends"]
+                        B2_detail["• Survivor bias in data selection
+                        • Missing data exclusion
+                        • Spatial averaging issues"]
+                        B1 --- B1_detail
+                        B2 --- B2_detail
+                    end
+                    B --> B_main
 
-                %% Analysis with Critique
-                subgraph D_main["<b>Key Findings</b>"]
-                    D1["Survivor Bias<br/>in Data"]
-                    D2["Missing Data<br/>Correlation"]
-                    D3["Well Depth<br/>Differences"]
-                end
-                D_crit["<b>Aquifer Complexity:</b><br/>
-                • Neglects aquifer complexity<br/>
-                • Hard-rock aquifers can consist of isolated systems, with wells 40–60 ft apart behaving independently<br/>
-                • Vesicular and fractured layers differ in porosity and permeability, complicating aquifer dynamics<br/>
-                • Historical community insights can help validate long-term trends. However, this was not the main focus of the paper so granted"]
-                D --> D_main
-                D_main -.-> D_crit
+                    %% Analysis Framework
+                    subgraph C_main[Evidence Analysis]
+                        C1[Hard-Rock Aquifer Context] --> C2[Data Correlations]
+                        C2 --> C3[Pattern Recognition]
+                        C1_detail["• Low storage capacity
+                        • High spatial heterogeneity
+                        • Large seasonal fluctuations"]
+                        C2_detail["• Missing data vs climate stress
+                        • Well depth vs water availability
+                        • Irrigation patterns vs well status"]
+                        C3_detail["• Defunct well patterns
+                        • Dry well distributions
+                        • Regional stress indicators"]
+                        C1 --- C1_detail
+                        C2 --- C2_detail
+                        C3 --- C3_detail
+                    end
+                    C --> C_main
 
-                %% New Solution with Critique
-                subgraph E_main["<b>Proposed Metrics</b>"]
-                    E1["Defunct Wells %"]
-                    E2["Dry Wells %"]
-                end
-                E_crit["<b>Data Quality Considerations:</b><br/>
-                • In this case, survivor bias is valid, but missing data may stem from different causes and not always reflect stress<br/>
-                • Local knowledge is crucial but difficult to measure across larger regions and requires more resources<br/>
-                • Metrics suggested might work in this context but need specificity (e.g., 'defunct' wells) for broader application<br/>
-                • Well density and understanding the aquifer they represent are crucial<br/>
-                • Reasons for stopped measurements vary<br/>
-                • Wells may not have been dug at the same time, leading to time scale differences<br/>
-                • Wells measuring in different seasons (wet/dry) or at different intervals (monthly/yearly) cannot be compared directly<br/>
-                • Excluded wells can skew the perspective, but including all wells can violate statistical standards<br/>
-                • Starting times of analysis can skew interpretations and a appropriately highlighted<br/>
-                • Context-specific understanding and method selection are essential"]
-                E --> E_main
-                E_main -.-> E_crit
+                    %% Alternative Metrics
+                    subgraph D_main[New Assessment Approach]
+                        D1[Proposed Metrics] --> D2[Implementation Challenges]
+                        D2 --> D3[Validation Methods]
+                        D1_detail["• Defunct wells percentage
+                        • Dry wells percentage
+                        • Short-term reliability measures"]
+                        D2_detail["• Data quality variability
+                        • Measurement inconsistencies
+                        • Time scale differences"]
+                        D3_detail["• Correlation with ground reports
+                        • Agricultural census alignment
+                        • Local knowledge integration"]
+                        D1 --- D1_detail
+                        D2 --- D2_detail
+                        D3 --- D3_detail
+                    end
+                    D --> D_main
 
-                %% Implications with Critique
-                subgraph F_main["<b>Conclusions</b>"]
-                    F1["Method<br/>Inadequacy"]
-                    F2["Policy<br/>Needs"]
-                    F3["Global<br/>Impact"]
-                end
-                F --> F_main
+                    %% Implications
+                    subgraph E_main[Impact & Applications]
+                        E1[Policy Recommendations] --> E2[Global Relevance]
+                        E2 --> E3[Future Directions]
+                        E1_detail["• Improved data collection
+                        • Context-specific interventions
+                        • Resource allocation strategy"]
+                        E2_detail["• Applicable to similar aquifers
+                        • Methodology adaptation needs
+                        • Regional consideration requirements"]
+                        E3_detail["• Enhanced monitoring systems
+                        • Integration of local knowledge
+                        • Balance of statistical & practical needs"]
+                        E1 --- E1_detail
+                        E2 --- E2_detail
+                        E3 --- E3_detail
+                    end
+                    E --> E_main
 
-                %% Adding Global Context-Specific Understanding
-                F4["<b>Global Context-Specific Understanding:</b><br/>
-                • Survior bias valid in this case but cannot translate globally<br/>
-                • Need to strike a baance between statistical accuracy and extent of inferences made<br/>
-                • Methodology must be tailored to regional and contextual differences<br/>
-                • New indicators can prove effictive but should represent the actual case. A truly defunct well in a particular aquifer can provide valuable insights when compared with otehrs in the same aquifer<br/>
-                • Inferring wells to be defunct/dry could also introduce a bias"]
-                F_main --> F4
+                    %% Critical Considerations
+                    Stat_Crit["STATISTICAL ANALYSIS:
+                    • Mann-Kendall (MK) test is a statistical standard for determining trend reliability
+                    • Sen's slope should only be used if MK denotes a trend
+                    • Cannot compromise statistical standards for inclusivity always
+                    • Time series completeness requirements"]
 
-                %% Styling
-                classDef default fill:#f8fafc,stroke:#3b82f6,stroke-width:2px
-                classDef critique fill:#fff7ed,stroke:#f97316,stroke-width:2px,text-align:left
-                classDef mainFlow fill:#dbeafe,stroke:#3b82f6,stroke-width:3px
-                class A,B,C,D,E,F mainFlow
-                class C_crit,D_crit,E_crit,F4 critique
-        </pre>
+                    Data_Crit["DATA QUALITY & COMPLEXITY:
+                    • Rainfall-recharge complexity often simplified
+                    • Different infiltration patterns for same rainfall intensity
+                    • Hard-rock aquifers as isolated systems
+                    • Wells 40-60 ft apart can behave independently
+                    • Vesicular and fractured layers have different properties"]
+
+                    Method_Crit["METHODOLOGICAL CONSIDERATIONS:
+                    • Timing-related variations:
+                      - Well measurement timing differences
+                      - Seasonal measurement variations
+                      - Different measurement intervals
+                    • Analysis challenges:
+                      - Starting time bias in analysis
+                      - Well density representation issues
+                    • Data collection issues:
+                      - Reasons for stopped measurements vary
+                      - Time scale differences in well establishment"]
+
+                    Context_Crit["GLOBAL APPLICATION:
+                    • Survivor bias validity varies by context (justified in South India)
+                    • Balance needed between statistical accuracy and inference
+                    • Region-specific methodology requirements
+                    • Risk of introducing new biases with alternative metrics
+                    • Need for aquifer-specific understanding
+                    • Local knowledge crucial for validation"]
+
+                    B_main -.->|Critical Note| Stat_Crit
+                    C_main -.->|Critical Note| Data_Crit
+                    D_main -.->|Critical Note| Method_Crit
+                    E_main -.->|Critical Note| Context_Crit
+
+                    %% Styling
+                    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px
+                    classDef main fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                    classDef detail fill:#f3f3f3,stroke:#666,stroke-width:1px
+                    classDef critique fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px
+                    
+                    class A,B,C,D,E main
+                    class A1_detail,A2_detail,B1_detail,B2_detail,C1_detail,C2_detail,C3_detail,D1_detail,D2_detail,D3_detail,E1_detail,E2_detail,E3_detail detail
+                    class Stat_Crit,Data_Crit,Method_Crit,Context_Crit critique
+            </pre>
+        </div>
     </div>
 
     <div class="controls">
@@ -240,142 +325,168 @@
         <button class="btn" onclick="resetZoom()">Reset</button>
     </div>
 
-    <div id="tooltip" class="tooltip"></div>
+    <div class="mouse-controls" style="text-align: left;">
+        🖱️ Mouse Controls:<br>
+        &nbsp;&nbsp;• Scroll to zoom in/out<br>
+        &nbsp;&nbsp;• Click & drag to pan<br>
+        &nbsp;&nbsp;• Hover over nodes to enlarge<br>
+        <br>
+        ⌨️ Keyboard Controls:<br>
+        &nbsp;&nbsp;• Arrow keys to pan<br>
+        &nbsp;&nbsp;• + / - to zoom
+    </div>
 
     <script>
-        mermaid.initialize({ 
-            startOnLoad: true,
-            securityLevel: 'loose',
-            theme: 'base',
-            flowchart: {
-                useMaxWidth: true,
-                htmlLabels: true,
-                curve: 'basis'
-            }
-        });
+        let panZoom;
 
-        // Initialize pan-zoom after Mermaid renders
-        mermaid.init(undefined, ".mermaid").then(function() {
+        // Add greeting function
+        function showGreeting() {
+            const hour = new Date().getHours();
+            let greeting;
+            let emoji;
+
+            if (hour >= 5 && hour < 12) {
+                greeting = "Good Morning";
+                emoji = "🌅";
+            } else if (hour >= 12 && hour < 17) {
+                greeting = "Good Afternoon";
+                emoji = "☀️";
+            } else if (hour >= 17 && hour < 22) {
+                greeting = "Good Evening";
+                emoji = "🌆";
+            } else {
+                greeting = "Hello";
+                emoji = "👋";
+            }
+
+            const greetingDiv = document.querySelector('.greeting');
+            greetingDiv.innerHTML = `${emoji} <img src="water-well.png" alt="Well Labs" /> <span>${greeting}</span>, Welcome to my Research Flow Analysis!`;
+
+            // Remove the greeting after 5 seconds
+            setTimeout(() => {
+                greetingDiv.style.opacity = '0';
+                greetingDiv.style.transform = 'translateY(-20px)';
+                setTimeout(() => greetingDiv.remove(), 500);
+            }, 5000);
+        }
+
+        function initializePanZoom() {
+            if (panZoom) {
+                panZoom.destroy();
+            }
+
             const svg = document.querySelector("#flowchart svg");
             if (svg) {
-                // Set SVG attributes for better sizing
-                svg.style.width = '100%';
-                svg.style.height = '100%';
-                svg.setAttribute('width', '100%');
-                svg.setAttribute('height', '100%');
-                
-                window.panZoom = svgPanZoom(svg, {
+                panZoom = svgPanZoom(svg, {
                     zoomEnabled: true,
                     controlIconsEnabled: false,
                     fit: true,
                     center: true,
                     minZoom: 0.1,
-                    maxZoom: 10,
-                    zoomScaleSensitivity: 0.5
+                    maxZoom: 10
                 });
-                
-                // Fit and center the diagram
-                setTimeout(() => {
-                    window.panZoom.resize();
-                    window.panZoom.fit();
-                    window.panZoom.center();
-                }, 100);
-
-                // Add event listeners for nodes
-                const nodes = document.querySelectorAll(".node");
-                nodes.forEach(node => {
-                    node.addEventListener("mouseenter", showTooltip);
-                    node.addEventListener("mouseleave", hideTooltip);
-                    node.addEventListener("click", toggleNodeHighlight);
-                });
-
-                // Add event listeners for edges
-                const edges = document.querySelectorAll(".edgePath");
-                edges.forEach(edge => {
-                    edge.addEventListener("mouseenter", showEdgeTooltip);
-                    edge.addEventListener("mouseleave", hideTooltip);
-                });
-            }
-        });
-
-        function showTooltip(event) {
-            const node = event.target.closest(".node");
-            if (node) {
-                const text = node.textContent.trim();
-                const tooltip = document.getElementById("tooltip");
-                tooltip.textContent = text;
-                tooltip.style.opacity = "1";
-                
-                // Position tooltip near the mouse but ensure it stays in viewport
-                const rect = node.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                
-                let left = event.clientX + 15;
-                let top = event.clientY + 15;
-                
-                // Adjust if tooltip would go off screen
-                if (left + tooltipRect.width > window.innerWidth) {
-                    left = window.innerWidth - tooltipRect.width - 10;
-                }
-                if (top + tooltipRect.height > window.innerHeight) {
-                    top = window.innerHeight - tooltipRect.height - 10;
-                }
-                
-                tooltip.style.left = left + "px";
-                tooltip.style.top = top + "px";
-            }
-        }
-
-        function showEdgeTooltip(event) {
-            const edge = event.target.closest(".edgePath");
-            if (edge) {
-                const tooltip = document.getElementById("tooltip");
-                tooltip.textContent = "Connection between steps";
-                tooltip.style.opacity = "1";
-                tooltip.style.left = event.clientX + 15 + "px";
-                tooltip.style.top = event.clientY + 15 + "px";
-            }
-        }
-
-        function hideTooltip() {
-            const tooltip = document.getElementById("tooltip");
-            tooltip.style.opacity = "0";
-        }
-
-        function toggleNodeHighlight(event) {
-            const node = event.target.closest(".node");
-            if (node) {
-                node.classList.toggle("node-clicked");
             }
         }
 
         function zoomIn() {
-            if (window.panZoom) {
-                window.panZoom.zoomIn();
+            if (panZoom) {
+                panZoom.zoomIn();
             }
         }
 
         function zoomOut() {
-            if (window.panZoom) {
-                window.panZoom.zoomOut();
+            if (panZoom) {
+                panZoom.zoomOut();
             }
         }
 
         function resetZoom() {
-            if (window.panZoom) {
-                window.panZoom.resize();
-                window.panZoom.fit();
-                window.panZoom.center();
+            if (panZoom) {
+                panZoom.resetZoom();
+                panZoom.center();
             }
         }
 
+        // Add keyboard controls
+        let isKeyPressed = false;
+        let currentAnimation;
+
+        function smoothPan(x, y) {
+            if (currentAnimation) {
+                cancelAnimationFrame(currentAnimation);
+            }
+
+            const STEPS = 20; // Number of steps for smooth transition
+            const INTERVAL = 1000 / 60; // 60 FPS
+            let step = 0;
+
+            function animate() {
+                if (step < STEPS) {
+                    panZoom.panBy({
+                        x: x / STEPS,
+                        y: y / STEPS
+                    });
+                    step++;
+                    currentAnimation = requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!panZoom || isKeyPressed) return;
+            
+            const STEP = 100; // Total distance to pan
+            isKeyPressed = true;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    smoothPan(STEP, 0);
+                    break;
+                case 'ArrowRight':
+                    smoothPan(-STEP, 0);
+                    break;
+                case 'ArrowUp':
+                    smoothPan(0, STEP);
+                    break;
+                case 'ArrowDown':
+                    smoothPan(0, -STEP);
+                    break;
+                case '+':
+                case '=':
+                    panZoom.zoomIn();
+                    break;
+                case '-':
+                case '_':
+                    panZoom.zoomOut();
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                isKeyPressed = false;
+            }
+        });
+
+        // Initialize Mermaid and setup
+        mermaid.initialize({ 
+            startOnLoad: true,
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: false
+            }
+        });
+
+        mermaid.init(undefined, ".mermaid").then(() => {
+            initializePanZoom();
+            showGreeting(); // Show greeting after flowchart is initialized
+        });
+
         // Handle window resize
         window.addEventListener('resize', () => {
-            if (window.panZoom) {
-                window.panZoom.resize();
-                window.panZoom.fit();
-                window.panZoom.center();
-            }
+            initializePanZoom();
         });
     </script>
 </body>
